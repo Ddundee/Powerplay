@@ -1,11 +1,12 @@
 package org.firstinspires.ftc.teamcode.tuning;
 
+import com.acmerobotics.roadrunner.drive.MecanumDrive;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeRegistrar;
+import org.firstinspires.ftc.teamcode.drive.opmode.*;
 
 import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
-import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,16 +26,23 @@ public final class TuningOpModes {
         if (DISABLED) return;
 
         List<Class<? extends OpMode>> opModes = Arrays.asList(
-                AngularRampLogger.class,
-                ForwardPushTest.class,
-                ForwardRampLogger.class,
-                LateralPushTest.class,
-                LateralRampLogger.class,
-                ManualFeedbackTuner.class,
+                AutomaticFeedforwardTuner.class,
+                BackAndForth.class,
+                DriveVelocityPIDTuner.class,
+                FollowerPIDTuner.class,
+                LocalizationTest.class,
                 ManualFeedforwardTuner.class,
+                MaxAngularVeloTuner.class,
+                MaxVelocityTuner.class,
+                MotorDirectionDebugger.class,
                 SplineTest.class,
-                MecanumMotorDirectionDebugger.class
-        );
+                StrafeTest.class,
+                StraightTest.class,
+                TrackingWheelForwardOffsetTuner.class,
+                TrackingWheelLateralDistanceTuner.class,
+                TrackWidthTuner.class,
+                TurnTest.class
+                );
 
         for (Class<? extends OpMode> o : opModes) {
             manager.register(new OpModeMeta.Builder()
