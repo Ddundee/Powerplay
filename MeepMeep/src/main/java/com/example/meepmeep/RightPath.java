@@ -27,6 +27,8 @@ public class RightPath {
                                         //Where we drop preload cone
                                         .lineTo(new Vector2d(31, -7))
                                         .waitSeconds(2)
+
+
                                         .lineTo(new Vector2d(36, -12))
                                         .turn(Math.toRadians(45))
 
