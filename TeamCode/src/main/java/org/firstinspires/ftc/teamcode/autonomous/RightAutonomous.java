@@ -6,8 +6,9 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.drive.MecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
-import org.firstinspires.ftc.teamcode.vision.SleeveDetection;
+import org.firstinspires.ftc.teamcode.vision.sleevedetection.SleeveDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -89,7 +90,7 @@ public class RightAutonomous extends LinearOpMode {
 
         for(int i = 0; i < NUM_CONES - 1; i++) {
             drive.followTrajectorySequence(scoreConeCycle);
-            if((i == NUM_CONES - 2 && positon != SleeveDetection.ParkingPosition.RIGHT) || i != NUM_CONES - 2) {
+            if(i != NUM_CONES - 2 || positon != SleeveDetection.ParkingPosition.RIGHT) {
                 drive.followTrajectorySequence(turnLeft45Deg);
             }
         }
