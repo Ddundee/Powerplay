@@ -1,6 +1,23 @@
 package org.firstinspires.ftc.teamcode.intake;
 
-import static org.firstinspires.ftc.teamcode.intake.DoubleReverse4Bar.StateDR4B.*;
+import static org.firstinspires.ftc.teamcode.intake.StateDR4B.AUTODOWN;
+import static org.firstinspires.ftc.teamcode.intake.StateDR4B.DOWN;
+import static org.firstinspires.ftc.teamcode.intake.StateDR4B.PREP;
+import static org.firstinspires.ftc.teamcode.intake.StateDR4B.START;
+import static org.firstinspires.ftc.teamcode.intake.IntakeConstants.leftBaseArmHold;
+import static org.firstinspires.ftc.teamcode.intake.IntakeConstants.leftBaseArmIn;
+import static org.firstinspires.ftc.teamcode.intake.IntakeConstants.leftBaseArmIntakePrep;
+import static org.firstinspires.ftc.teamcode.intake.IntakeConstants.leftBaseArmOut;
+import static org.firstinspires.ftc.teamcode.intake.IntakeConstants.leftClawOpen;
+import static org.firstinspires.ftc.teamcode.intake.IntakeConstants.linkageDown;
+import static org.firstinspires.ftc.teamcode.intake.IntakeConstants.linkageHigh;
+import static org.firstinspires.ftc.teamcode.intake.IntakeConstants.linkageLow;
+import static org.firstinspires.ftc.teamcode.intake.IntakeConstants.linkageMedium;
+import static org.firstinspires.ftc.teamcode.intake.IntakeConstants.rightBaseArmHold;
+import static org.firstinspires.ftc.teamcode.intake.IntakeConstants.rightBaseArmIn;
+import static org.firstinspires.ftc.teamcode.intake.IntakeConstants.rightBaseArmIntakePrep;
+import static org.firstinspires.ftc.teamcode.intake.IntakeConstants.rightBaseArmOut;
+import static org.firstinspires.ftc.teamcode.intake.IntakeConstants.rightClawOpen;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -12,6 +29,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.drive.MecanumDrive;
+import org.firstinspires.ftc.teamcode.teleop.TeleOpBlue;
 
 public class DoubleReverse4Bar {
 
@@ -28,7 +46,7 @@ public class DoubleReverse4Bar {
     public ColorSensor colorSensor;
 
     public BNO055IMU imu;
-    public BNO055IMU.Parameters imuParameters = new BNO055IMU.Parameters();
+    public BNO055IMU.Parameters imuParameters;
 
     public HardwareMap hardwareMap;
     public Telemetry telemetry;
@@ -44,14 +62,14 @@ public class DoubleReverse4Bar {
     public double errorUp = 0;
     public double derivativeUp = 0;
     public double integralSumUp = 0;
-    private ElapsedTime timerUp = new ElapsedTime();
+    private final ElapsedTime timerUp = new ElapsedTime();
     public double previousErrorUp = 0;
 
     // PID for going up field
     public double kpDown = 0.00005;
     public double kiDown = 0.000000501234567;
     public double kdDown = 0.00009;
-    private ElapsedTime timerDown = new ElapsedTime();
+    private final ElapsedTime timerDown = new ElapsedTime();
     private double lastErrorDown = 0;
 
     public double errorDown = 0;
@@ -72,6 +90,7 @@ public class DoubleReverse4Bar {
     public StateDR4B state;
     public DeployingStateDR4B deploying;
     public Intake intake;
+    public IntakePosition intakePosition;
     public DoubleReverse4Bar(HardwareMap hardwareMap, Telemetry telemetry) {
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
@@ -100,10 +119,10 @@ public class DoubleReverse4Bar {
 
         rightLinkage.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        rightBase.setPosition(IntakeConstants.rightBaseArmIn);
-        leftBase.setPosition(IntakeConstants.leftBaseArmIn);
-        rightClaw.setPosition(IntakeConstants.rightClawOpen);
-        leftClaw.setPosition(IntakeConstants.leftClawOpen);
+        rightBase.setPosition(rightBaseArmIn);
+        leftBase.setPosition(leftBaseArmIn);
+        rightClaw.setPosition(rightClawOpen);
+        leftClaw.setPosition(leftClawOpen);
 
         imuParameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(imuParameters);
@@ -114,16 +133,7 @@ public class DoubleReverse4Bar {
         state = StateDR4B.START;
         deploying = DeployingStateDR4B.UP;
         intake = Intake.NOTHING;
-    }
-
-    public void mecanumDrive(double x, double y, double rx, double multiplier) {
-        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-        double lf = ((y + x + rx) / denominator) * multiplier;
-        double lb = ((y - x + rx) / denominator) * multiplier;
-        double rb = ((y + x - rx) / denominator) * multiplier;
-        double rf = ((y - x - rx) / denominator) * multiplier;
-
-        mecanumDrive.setMotorPowers(lf, lb, rb, rf);
+        intakePosition = IntakePosition.INTAKE;
     }
 
     public double PIDControllerUp(double reference, double state) {
@@ -152,7 +162,7 @@ public class DoubleReverse4Bar {
 
         telemetry.addData("Linkage target", linkageTarget);
         telemetry.addData("Linkage adjustment", adjustment);
-        telemetry.addData("PID output", PIDControllerUp(linkageTarget + adjustment, linkl.getCurrentPosition()));
+        telemetry.addData("PID output", PIDControllerUp(linkageTarget + adjustment, leftLinkage.getCurrentPosition()));
 
         telemetry.addData("Right Claw Pos", rightClaw.getPosition());
         telemetry.addData("Left Claw Pos", leftClaw.getPosition());
@@ -186,32 +196,32 @@ public class DoubleReverse4Bar {
     public void setBasePosition(BasePositions position) {
         switch (position) {
             case DEPLOY:
-                leftBase.setPosition(IntakeConstants.leftBaseArmOut);
-                rightBase.setPosition(IntakeConstants.rightBaseArmOut);
+                leftBase.setPosition(leftBaseArmOut);
+                rightBase.setPosition(rightBaseArmOut);
                 break;
             case HOLD:
-                leftBase.setPosition(IntakeConstants.leftBaseArmHold);
-                rightBase.setPosition(IntakeConstants.rightBaseArmHold);
+                leftBase.setPosition(leftBaseArmHold);
+                rightBase.setPosition(rightBaseArmHold);
                 break;
             case INTAKE:
-                leftBase.setPosition(IntakeConstants.leftBaseArmIn);
-                rightBase.setPosition(IntakeConstants.rightBaseArmIn);
+                leftBase.setPosition(leftBaseArmIn);
+                rightBase.setPosition(rightBaseArmIn);
                 break;
             case INTAKE_PREP:
-                leftBase.setPosition(IntakeConstants.leftBaseArmIntakePrep);
-                rightBase.setPosition(IntakeConstants.rightBaseArmIntakePrep);
+                leftBase.setPosition(leftBaseArmIntakePrep);
+                rightBase.setPosition(rightBaseArmIntakePrep);
                 break;
         }
     }
 
     public void setClawPosition(boolean opened) {
         if(opened) {
-            rightClaw.setPosition(IntakeConstants.rightClawOpen);
-            leftClaw.setPosition(IntakeConstants.leftClawOpen);
+            rightClaw.setPosition(rightClawOpen);
+            leftClaw.setPosition(leftClawOpen);
         }
         else {
-            rightClaw.setPosition(IntakeConstants.rightClawOpen);
-            leftClaw.setPosition(IntakeConstants.leftClawOpen);
+            rightClaw.setPosition(rightClawOpen);
+            leftClaw.setPosition(leftClawOpen);
             setBasePosition(BasePositions.HOLD);
         }
     }
@@ -246,31 +256,11 @@ public class DoubleReverse4Bar {
         }
     }
 
-    public enum StateDR4B {
-        START,
-        LOW,
-        MIDDLE,
-        TOP,
-        DOWN,
-        ADJUSTMENT,
-        PREP,
-        AUTODOWN
-    }
-
-    public enum DeployingStateDR4B {
-        UP,
-        DEPLOY,
-        HOLD,
-        INTAKE,
-        WAIT,
-        DOWN
-    }
-
     public void DR4BState() {
         switch (state) {
             case LOW:
                 if(rightBase.getPosition() < .75 && leftBase.getPosition() > .32) {
-                    linkageTarget = IntakeConstants.linkageLow;
+                    linkageTarget = linkageLow;
                 }
 
                 if(getPos(leftLinkage) < -200 && getPos(rightLinkage) < -200 && deploying == DeployingStateDR4B.WAIT) {
@@ -288,12 +278,55 @@ public class DoubleReverse4Bar {
                 }
 
                 if(deploying == DeployingStateDR4B.HOLD) {
+                    if (firstTime) {
+                        deployTimer.reset();
+                        firstTime = false;
+                    }
+                    if (deployTimer.milliseconds() > 200) {
+                        setBasePosition(BasePositions.HOLD);
+                        firstTime = true;
+                        secondTime = true;
+                    }
+                    if (secondTime) {
+                        otherDeployTimer.reset();
+                        secondTime = false;
+                    }
+                    if (otherDeployTimer.milliseconds() > 1000 && (getPos(leftLinkage) > -410 && getPos(leftLinkage) < -400 && getPos(rightLinkage) > -410 && getPos(rightLinkage) < 400)) {
+                        linkageTarget = linkageDown;
+                        state = DOWN;
+
+                        deploying = DeployingStateDR4B.DOWN;
+                        downTimer.reset();
+                    }
+                }
+                    break;
+            case MIDDLE:
+                if(rightBase.getPosition() < .75 && leftBase.getPosition() > .32) {
+                    linkageTarget = linkageMedium;
+                }
+
+                if(getPos(rightLinkage) < -350 && getPos(rightLinkage) < -350 && deploying == DeployingStateDR4B.WAIT) {
+                    setBasePosition(BasePositions.DEPLOY);
+                    deploying = DeployingStateDR4B.DEPLOY;
+                }
+
+                if (rightClaw.getPosition() >= .09 && rightClaw.getPosition() <= .11 && rightClaw.getPosition() >= .85 && rightClaw.getPosition() <= .87) {
+                    if(deployTimer.milliseconds() > 500) {
+                        open = false;
+                        setClawPosition(open);
+                        deploying = DeployingStateDR4B.HOLD;
+                        state = PREP;
+                    }
+                }
+
+                if(deploying == DeployingStateDR4B.HOLD) {
                     if(firstTime) {
                         deployTimer.reset();
                         firstTime = false;
                     }
                     if(deployTimer.milliseconds() > 200) {
                         setBasePosition(BasePositions.HOLD);
+                        linkageTarget = linkageMedium;
                         firstTime = true;
                         secondTime = true;
                     }
@@ -302,212 +335,123 @@ public class DoubleReverse4Bar {
                         secondTime = false;
                     }
                     if(otherDeployTimer.milliseconds() > 1000 && (getPos(leftLinkage) > -410 && getPos(leftLinkage) < -400 && getPos(rightLinkage) > -410 && getPos(rightLinkage) < 400)) {
-                        linkageTarget = IntakeConstants.linkageDown;
-                        state = DOWN;
+                        linkageTarget = linkageLow;
 
                         deploying = DeployingStateDR4B.DOWN;
                         downTimer.reset();
                     }
-                    break;
-                    case MIDDLE:
-                        if(rightBase.getPosition() < .75 && leftBase.getPosition() > .32) {
-                            linkageTarget = IntakeConstants.linkageMedium;
-                        }
-
-                        if(getPos(rightLinkage) < -350 && getPos(rightLinkage) < -350 && deploying == DeployingStateDR4B.WAIT) {
-                            setBasePosition(BasePositions.DEPLOY);
-                            deploying = DeployingStateDR4B.DEPLOY;
-                        }
-
-                        if (rightClaw.getPosition() >= .09 && rightClaw.getPosition() <= .11 && rightClaw.getPosition() >= .85 && rightClaw.getPosition() <= .87) {
-                            if(deployTimer.milliseconds() > 500) {
-                                open = false;
-                                setClawPosition(open);
-                                deploying = DeployingStateDR4B.HOLD;
-                                state = PREP;
-                            }
-                        }
-
-                        if(deploying == DeployingStateDR4B.HOLD) {
-                            if(firstTime) {
-                                deployTimer.reset();
-                                firstTime = false;
-                            }
-                            if(deployTimer.milliseconds() > 200) {
-                                hold();
-                                linkageTarget = LINKAGE_MEDIUM;
-                                firstTime = true;
-                                secondTime = true;
-                            }
-                            if(secondTime) {
-                                otherDeployTimer.reset();
-                                secondTime = false;
-                            }
-                            if(otherDeployTimer.milliseconds() > 1000 && (getPos(linkl) > -410 && getPos(linkl) < -400 && getPos(linkr) > -410 && getPos(linkr) < 400)) {
-                                linkageTarget = LINKAGE_LOW;
-
-                                deploying = DeployingStateDR4B.DOWN;
-                                downTimer.reset();
-                            }
-                            if(deploying == DeployingStateDR4B.DOWN && downTimer.milliseconds() > 200) {
-                                state = DOWN;
-                            }
-
-                        }
-
-//                if(deploying == DeployingStateDR4B.HOLD) {
-//                    state = StateDR4B.DOWN;
-//                }
-
-                        break;
-
-                    case TOP:
-
-                        if(baseR.getPosition() < .75 && baseL.getPosition() > .32) {
-                            linkageTarget = LINKAGE_HIGH;
-                        }
-
-
-                        //getPos(linkl) > -635 && getPos(linkl) < -625 && getPos(linkr) > -635 && getPos(linkr) < -625
-                        if(getPos(linkl) < -550 && getPos(linkr) < -550 && deploying == DeployingStateDR4B.WAIT) {
-                            deploy();
-                            deploying = DeployingStateDR4B.DEPLOY;
-                        }
-
-                        if (clawR.getPosition() >= .09 && clawR.getPosition() <= .11 && rightClaw.getPosition() >= .85 && rightClaw.getPosition() <= .87) {
-                            if(deployTimer.milliseconds() > 500) {
-                                open = false;
-                                setClawPosition(open);
-                                deploying = DeployingStateDR4B.HOLD;
-                                state = PREP;
-                                firstTime = true;
-                                downTimer.reset();
-                            }
-                        }
-
-
-                        break;
-
-                    case AUTODOWN:
-
-                        if(deploying == DeployingStateDR4B.HOLD) {
-//                    if(firstTime) {
-//                        deployTimer.reset();
-//                        firstTime = false;
-//                    }
-//                    if(deployTimer.milliseconds() > 200) {
-//                        hold();
-//                        linkageTarget = LINKAGE_MEDIUM;
-//                        secondTime = true;
-//                    }
-//                    if(secondTime) {
-//                        otherDeployTimer.reset();
-//                        secondTime = false;
-//                    }
-
-//                    if(otherDeployTimer.milliseconds() > 1000 && (getPos(linkl) > -410 && getPos(linkl) < -400 && getPos(linkr) > -410 && getPos(linkr) < 400)) {
-
-                            linkageTarget = LINKAGE_DOWN;
-
-                            deploying = DeployingStateDR4B.DOWN;
-//                    downTimer.reset();
-//                    }
-                            if(deploying == DeployingStateDR4B.DOWN) {
-                                downTimer.reset();
-                                deploying = DeployingStateDR4B.INTAKE;
-                            }
-
-                            if(deploying == DeployingStateDR4B.INTAKE && downTimer.milliseconds() > 1000) {
-                                state = DOWN;
-                                firstTime = true;
-                                linkl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                                linkr.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                                linkr.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                                linkl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                                adjustment = 0;
-                                linkageTarget = 0;
-                                state = Robot.StateDR4B.START;
-                                linkl.setPower(0);
-                                linkr.setPower(0);
-                                intake = Robot.Intake.PREP;
-                                intakeTimer.reset();
-                            }
-
-                        }
-
-                    case DOWN:
-
+                    if(deploying == DeployingStateDR4B.DOWN && downTimer.milliseconds() > 200) {
+                        state = DOWN;
+                    }
+                }
+                break;
+            case TOP:
+                if(rightBase.getPosition() < .75 && leftBase.getPosition() > .32) {
+                    linkageTarget = linkageHigh;
+                }
+                if(getPos(leftLinkage) < -550 && getPos(rightLinkage) < -550 && deploying == DeployingStateDR4B.WAIT) {
+                    setBasePosition(BasePositions.DEPLOY);
+                    deploying = DeployingStateDR4B.DEPLOY;
+                }
+                if(rightClaw.getPosition() >= .09 && rightClaw.getPosition() <= .11 && rightClaw.getPosition() >= .85 && rightClaw.getPosition() <= .87) {
+                    if(deployTimer.milliseconds() > 500) {
                         open = false;
                         setClawPosition(open);
-                        hold();
-                        linkageTarget = LINKAGE_DOWN;
-                        deployTimer.reset();
-                        deployTimer.startTime();
-
-                        if (deployTimer.milliseconds() > 750) {
-                            state = START;
-                            linkageTarget = 0;
-                            linkr.setTargetPosition(0);
-                            linkr.setPower(.06);
-                            linkl.setTargetPosition(0);
-                            linkl.setPower(.06);
-                            state = DOWN;
-
-                        }
-
-                        if (getPos(linkr) >= 0 && getPos(linkl) >= 0) {
-                            linkl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                            linkr.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                            linkr.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                            linkl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                            linkageTarget = 0;
-                            adjustment = 0;
-                            linkr.setPower(0);
-                            linkl.setPower(0);
-                            state = START;
-                            firstTime = false;
-                        }
-
-                        break;
-
-                    case PREP:
-
-                        if(deploying == DeployingStateDR4B.HOLD) {
-                            if(firstTime) {
-                                deployTimer.reset();
-                                firstTime = false;
-                            }
-                            if(deployTimer.milliseconds() > 200) {
-                                hold();
-                                state = AUTODOWN;
-                            }
-                        }
-                        break;
+                        deploying = DeployingStateDR4B.HOLD;
+                        state = PREP;
+                        firstTime = true;
+                        downTimer.reset();
+                    }
                 }
-        }
-    }
+                break;
 
-    public enum Intake {
-        PREP,
-        INTAKE,
-        NOTHING
+            case AUTODOWN:
+                if(deploying == DeployingStateDR4B.HOLD) {
+                    linkageTarget = linkageDown;
+                    deploying = DeployingStateDR4B.DOWN;
+                    if(deploying == DeployingStateDR4B.DOWN) {
+                        downTimer.reset();
+                        deploying = DeployingStateDR4B.INTAKE;
+                    }
+                    if(deploying == DeployingStateDR4B.INTAKE && downTimer.milliseconds() > 1000) {
+                        state = DOWN;
+                        firstTime = true;
+                        leftLinkage.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        rightLinkage.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        rightLinkage.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                        leftLinkage.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                        adjustment = 0;
+                        linkageTarget = 0;
+                        state = StateDR4B.START;
+                        leftLinkage.setPower(0);
+                        rightLinkage.setPower(0);
+                        intake = Intake.PREP;
+                        intakeTimer.reset();
+                    }
+                }
+            case DOWN:
+                open = false;
+                setClawPosition(open);
+                setBasePosition(BasePositions.HOLD);
+                linkageTarget = linkageDown;
+                deployTimer.reset();
+                deployTimer.startTime();
+                if(deployTimer.milliseconds() > 750) {
+                    state = START;
+                    linkageTarget = 0;
+                    rightLinkage.setTargetPosition(0);
+                    rightLinkage.setPower(.06);
+                    leftLinkage.setTargetPosition(0);
+                    leftLinkage.setPower(.06);
+                    state = DOWN;
+                }
+                if (getPos(rightLinkage) >= 0 && getPos(leftLinkage) >= 0) {
+                    leftLinkage.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    rightLinkage.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    rightLinkage.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    leftLinkage.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    linkageTarget = 0;
+                    adjustment = 0;
+                    rightLinkage.setPower(0);
+                    leftLinkage.setPower(0);
+                    state = START;
+                    firstTime = false;
+                }
+                break;
+            case PREP:
+                if(deploying == DeployingStateDR4B.HOLD) {
+                    if(firstTime) {
+                        deployTimer.reset();
+                        firstTime = false;
+                    }
+                    if(deployTimer.milliseconds() > 200) {
+                        setBasePosition(BasePositions.HOLD);
+                        state = AUTODOWN;
+                    }
+                }
+                break;
+        }
     }
 
     public void IntakePos() {
         switch (intake) {
             case PREP:
-                intakePrep();
-                if(baseR.getPosition() == rArmIntakePrep) {
+                setBasePosition(BasePositions.INTAKE_PREP);
+
+                if(rightBase.getPosition() == rightBaseArmIntakePrep) {
+
                     open = true;
                     intake = Intake.INTAKE;
                 }
                 break;
 
             case INTAKE:
-                intake();
+                setBasePosition(BasePositions.INTAKE);
                 intake = Intake.NOTHING;
                 TeleOpBlue.on = false;
                 break;
         }
     }
 }
+
+

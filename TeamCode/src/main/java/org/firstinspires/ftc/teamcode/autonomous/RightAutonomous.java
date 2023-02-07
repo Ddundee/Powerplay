@@ -20,7 +20,7 @@ public class RightAutonomous extends LinearOpMode {
     private MecanumDrive drive = new MecanumDrive(hardwareMap);
     private SleeveDetection sleeveDetection;
     private OpenCvCamera camera;
-    private SleeveDetection.ParkingPosition positon;
+    private SleeveDetection.ParkingPosition position;
 
     Pose2d startPose = new Pose2d(32.75, -61.25, Math.toRadians(90));
     TrajectorySequence scorePreloadCone = drive.trajectorySequenceBuilder(startPose)
@@ -79,8 +79,8 @@ public class RightAutonomous extends LinearOpMode {
             public void onError(int errorCode) {}
         });
 
-        positon = sleeveDetection.getPosition();
-        telemetry.addData("Sleeve", positon);
+        position = sleeveDetection.getPosition();
+        telemetry.addData("Sleeve", position);
 
         drive.setPoseEstimate(startPose);
 
@@ -90,12 +90,12 @@ public class RightAutonomous extends LinearOpMode {
 
         for(int i = 0; i < NUM_CONES - 1; i++) {
             drive.followTrajectorySequence(scoreConeCycle);
-            if(i != NUM_CONES - 2 || positon != SleeveDetection.ParkingPosition.RIGHT) {
+            if(i != NUM_CONES - 2 || position != SleeveDetection.ParkingPosition.RIGHT) {
                 drive.followTrajectorySequence(turnLeft45Deg);
             }
         }
 
-        switch (positon) {
+        switch (position) {
             case LEFT:
                 drive.followTrajectorySequence(signalLeft);
                 break;

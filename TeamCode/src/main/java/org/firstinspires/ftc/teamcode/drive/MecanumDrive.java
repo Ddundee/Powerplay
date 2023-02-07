@@ -276,6 +276,19 @@ public class MecanumDrive extends com.acmerobotics.roadrunner.drive.MecanumDrive
         rightFront.setPower(rf);
     }
 
+    public void setPowersByGamepad(double x, double y, double rx, double multiplier) {
+        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+        double lf = ((y + x + rx) / denominator) * multiplier;
+        double lb = ((y - x + rx) / denominator) * multiplier;
+        double rb = ((y + x - rx) / denominator) * multiplier;
+        double rf = ((y - x - rx) / denominator) * multiplier;
+
+        leftFront.setPower(lf);
+        leftRear.setPower(lb);
+        rightRear.setPower(rb);
+        rightFront.setPower(rf);
+    }
+
     @Override
     public double getRawExternalHeading() {
         return imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
