@@ -33,64 +33,64 @@ import org.firstinspires.ftc.teamcode.teleop.TeleOpBlue;
 
 public class DoubleReverse4Bar {
 
-    public MecanumDrive mecanumDrive;
+    private MecanumDrive mecanumDrive;
 
-    public DcMotor leftLinkage;
-    public DcMotor rightLinkage;
+    private DcMotor leftLinkage;
+    private DcMotor rightLinkage;
 
-    public Servo leftClaw;
-    public Servo rightClaw;
-    public Servo leftBase;
-    public Servo rightBase;
+    private Servo leftClaw;
+    private Servo rightClaw;
+    private Servo leftBase;
+    private Servo rightBase;
 
-    public ColorSensor colorSensor;
+    private ColorSensor colorSensor;
 
-    public BNO055IMU imu;
-    public BNO055IMU.Parameters imuParameters;
+    private BNO055IMU imu;
+    private BNO055IMU.Parameters imuParameters;
 
-    public HardwareMap hardwareMap;
-    public Telemetry telemetry;
+    private HardwareMap hardwareMap;
+    private Telemetry telemetry;
 
-    public static int adjustment;
-    public static int linkageTarget;
+    private static int adjustment;
+    private static int linkageTarget;
 
     // PID for going down field
-    public double kpUp = 0.012;
-    public double kiUp = 0.0000401234567;
-    public double kdUp = 0.0008;
+    private double kpUp = 0.012;
+    private double kiUp = 0.0000401234567;
+    private double kdUp = 0.0008;
 
-    public double errorUp = 0;
-    public double derivativeUp = 0;
-    public double integralSumUp = 0;
+    private double errorUp = 0;
+    private double derivativeUp = 0;
+    private double integralSumUp = 0;
     private final ElapsedTime timerUp = new ElapsedTime();
-    public double previousErrorUp = 0;
+    private double previousErrorUp = 0;
 
     // PID for going up field
-    public double kpDown = 0.00005;
-    public double kiDown = 0.000000501234567;
-    public double kdDown = 0.00009;
+    private double kpDown = 0.00005;
+    private double kiDown = 0.000000501234567;
+    private double kdDown = 0.00009;
     private final ElapsedTime timerDown = new ElapsedTime();
     private double lastErrorDown = 0;
 
-    public double errorDown = 0;
-    public double derivativeDown = 0;
-    public double integralSumDown = 0;
+    private double errorDown = 0;
+    private double derivativeDown = 0;
+    private double integralSumDown = 0;
 
 
-    public ElapsedTime deployTimer = new ElapsedTime();
-    public ElapsedTime otherDeployTimer = new ElapsedTime();
-    public ElapsedTime downTimer = new ElapsedTime();
-    public ElapsedTime intakeTimer = new ElapsedTime();
+    private ElapsedTime deployTimer = new ElapsedTime();
+    private ElapsedTime otherDeployTimer = new ElapsedTime();
+    private ElapsedTime downTimer = new ElapsedTime();
+    private ElapsedTime intakeTimer = new ElapsedTime();
 
-    public boolean open = true;
+    private boolean open = true;
 
-    public boolean firstTime = true;
-    public boolean secondTime = false;
+    private boolean firstTime = true;
+    private boolean secondTime = false;
 
-    public StateDR4B state;
-    public DeployingStateDR4B deploying;
-    public Intake intake;
-    public IntakePosition intakePosition;
+    private StateDR4B state;
+    private DeployingStateDR4B deploying;
+    private Intake intake;
+    private IntakePosition intakePosition;
     public DoubleReverse4Bar(HardwareMap hardwareMap, Telemetry telemetry) {
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
@@ -134,6 +134,114 @@ public class DoubleReverse4Bar {
         deploying = DeployingStateDR4B.UP;
         intake = Intake.NOTHING;
         intakePosition = IntakePosition.INTAKE;
+    }
+
+    public static int getAdjustment() {
+        return adjustment;
+    }
+
+    public static void setAdjustment(int adjustment) {
+        DoubleReverse4Bar.adjustment = adjustment;
+    }
+
+    public static int getLinkageTarget() {
+        return linkageTarget;
+    }
+
+    public static void setLinkageTarget(int linkageTarget) {
+        DoubleReverse4Bar.linkageTarget = linkageTarget;
+    }
+
+    public boolean isOpen() {
+        return open;
+    }
+
+    public void setOpen(boolean open) {
+        this.open = open;
+    }
+
+    public boolean isFirstTime() {
+        return firstTime;
+    }
+
+    public void setFirstTime(boolean firstTime) {
+        this.firstTime = firstTime;
+    }
+
+    public StateDR4B getState() {
+        return state;
+    }
+
+    public void setState(StateDR4B state) {
+        this.state = state;
+    }
+
+    public Intake getIntake() {
+        return intake;
+    }
+
+    public void setIntake(Intake intake) {
+        this.intake = intake;
+    }
+
+    public IntakePosition getIntakePosition() {
+        return intakePosition;
+    }
+
+    public void setIntakePosition(IntakePosition intakePosition) {
+        this.intakePosition = intakePosition;
+    }
+
+    public void deployTimerReset() {
+        deployTimer.reset();
+    }
+
+    public double getRightBasePosition() {
+        return rightBase.getPosition();
+    }
+
+    public void setRightBasePosition(double position) {
+        rightBase.setPosition(position);
+    }
+
+    public double getLeftBasePosition() {
+        return leftBase.getPosition();
+    }
+
+    public void setLeftBasePosition(double position) {
+        leftBase.setPosition(position);
+    }
+
+    public void intakeTimerReset() {
+        intakeTimer.reset();
+    }
+
+    public double getIntakeTimerInMilliseconds() {
+        return intakeTimer.milliseconds();
+    }
+
+    public void setLeftLinkagePowerMode(DcMotor.RunMode mode) {
+        leftLinkage.setMode(mode);
+    }
+
+    public void setRightLinkagePowerMode(DcMotor.RunMode mode) {
+        rightLinkage.setMode(mode);
+    }
+
+    public void setLeftLinkagePower(double power) {
+        leftLinkage.setPower(power);
+    }
+
+    public void setRightLinkagePower(double power) {
+        rightLinkage.setPower(power);
+    }
+
+    public double getLeftLinkagePower() {
+        return leftLinkage.getPower();
+    }
+
+    public double getRightLinkagePower() {
+        return rightLinkage.getPower();
     }
 
     public double PIDControllerUp(double reference, double state) {
