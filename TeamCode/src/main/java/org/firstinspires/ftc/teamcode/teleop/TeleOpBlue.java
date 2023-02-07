@@ -32,15 +32,12 @@ public class TeleOpBlue extends LinearOpMode {
 
         while(opModeIsActive()) {
             doubleReverse4Bar.intakeTelemetry();
-            if(doubleReverse4Bar.getState() == StateDR4B.AUTODOWN) {
+            if(doubleReverse4Bar.getState() == StateDR4B.AUTODOWN)
                 doubleReverse4Bar.setLinkagePowerDown(doubleReverse4Bar.getLinkageTarget(), doubleReverse4Bar.getAdjustment());
-            }
-            else if(!(doubleReverse4Bar.getState() == StateDR4B.DOWN)) {
+            else if(!(doubleReverse4Bar.getState() == StateDR4B.DOWN))
                 doubleReverse4Bar.setLinkagePowerDown(doubleReverse4Bar.getLinkageTarget(), doubleReverse4Bar.getAdjustment());
-            }
-            else if(!(doubleReverse4Bar.getState() == StateDR4B.START)) {
+            else if(!(doubleReverse4Bar.getState() == StateDR4B.START))
                 doubleReverse4Bar.setLinkagePowerUp(doubleReverse4Bar.getLinkageTarget(), doubleReverse4Bar.getAdjustment());
-            }
 
             double y = -gamepad1.left_stick_y;
             double x = gamepad1.left_stick_x;

@@ -51,8 +51,8 @@ public class DoubleReverse4Bar {
     private HardwareMap hardwareMap;
     private Telemetry telemetry;
 
-    private static int adjustment;
-    private static int linkageTarget;
+    private int adjustment;
+    private int linkageTarget;
 
     // PID for going down field
     private double kpUp = 0.012;
@@ -88,9 +88,11 @@ public class DoubleReverse4Bar {
     private boolean secondTime = false;
 
     private StateDR4B state;
+
     private DeployingStateDR4B deploying;
     private Intake intake;
     private IntakePosition intakePosition;
+
     public DoubleReverse4Bar(HardwareMap hardwareMap, Telemetry telemetry) {
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
@@ -136,20 +138,44 @@ public class DoubleReverse4Bar {
         intakePosition = IntakePosition.INTAKE;
     }
 
-    public static int getAdjustment() {
+    public DcMotor getLeftLinkage() {
+        return leftLinkage;
+    }
+
+    public void setLeftLinkage(DcMotor leftLinkage) {
+        this.leftLinkage = leftLinkage;
+    }
+
+    public DcMotor getRightLinkage() {
+        return rightLinkage;
+    }
+
+    public void setRightLinkage(DcMotor rightLinkage) {
+        this.rightLinkage = rightLinkage;
+    }
+
+    public DeployingStateDR4B getDeploying() {
+        return deploying;
+    }
+
+    public void setDeploying(DeployingStateDR4B deploying) {
+        this.deploying = deploying;
+    }
+
+    public int getAdjustment() {
         return adjustment;
     }
 
-    public static void setAdjustment(int adjustment) {
-        DoubleReverse4Bar.adjustment = adjustment;
+    public void setAdjustment(int adjustment) {
+        this.adjustment = adjustment;
     }
 
-    public static int getLinkageTarget() {
+    public int getLinkageTarget() {
         return linkageTarget;
     }
 
-    public static void setLinkageTarget(int linkageTarget) {
-        DoubleReverse4Bar.linkageTarget = linkageTarget;
+    public void setLinkageTarget(int linkageTarget) {
+        this.linkageTarget = linkageTarget;
     }
 
     public boolean isOpen() {
