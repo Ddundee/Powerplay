@@ -8,7 +8,7 @@ public class IntakeConstants {
     public final static double leftClawClose = 0.005;
     public final static double rightClawClose = 0.955;
 
-    public final static double leftBaseArmIn = 0;
+    public final static double leftBaseArmIn = 0.07;
     public final static double rightBaseArmIn = 1;
 
     public final static double leftBaseArmHold = 0.37;
@@ -17,8 +17,8 @@ public class IntakeConstants {
     public final static double leftBaseArmOut = 0.585;
     public final static double rightBaseArmOut = 0.492222222222;
 
-    public final static double leftBaseArmIntakePrep = 0.10888888888888;
-    public final static double rightBaseArmIntakePrep = 0.88833333333333;
+    public final static double leftBaseArmIntakePrep = .1866666666666666666;
+    public final static double rightBaseArmIntakePrep = .8772222222222222   ;
 
     public final static int linkageDown = -100;
     public final static int linkageLow = -340;

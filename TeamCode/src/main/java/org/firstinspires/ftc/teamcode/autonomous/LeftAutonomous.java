@@ -22,9 +22,9 @@ public class LeftAutonomous extends LinearOpMode {
     private OpenCvCamera camera;
     private SleeveDetection.ParkingPosition positon;
 
-    Pose2d startPose = new Pose2d(-32.75, -61.25, Math.toRadians(90));
+    Pose2d startPose = new Pose2d(-32.75, -61.25, Math.toRadians(270));
     TrajectorySequence scorePreloadCone = drive.trajectorySequenceBuilder(startPose)
-            .lineTo(new Vector2d(-36, -12))
+            .back(52)
             .turn(Math.toRadians(-45))
             .lineTo(new Vector2d(-31, -7))
             //TODO: Add code to drop preload cone at high pole
