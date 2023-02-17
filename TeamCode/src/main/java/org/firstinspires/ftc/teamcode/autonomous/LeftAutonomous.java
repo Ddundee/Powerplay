@@ -90,7 +90,7 @@ public class LeftAutonomous extends LinearOpMode {
 
         for(int i = 0; i < NUM_CONES - 1; i++) {
             drive.followTrajectorySequence(scoreConeCycle);
-            if((i == NUM_CONES - 2 && positon != SleeveDetection.ParkingPosition.RIGHT) || i != NUM_CONES - 2) {
+            if(i != NUM_CONES - 2 || positon != SleeveDetection.ParkingPosition.RIGHT) {
                 drive.followTrajectorySequence(turnRight45Deg);
             }
         }

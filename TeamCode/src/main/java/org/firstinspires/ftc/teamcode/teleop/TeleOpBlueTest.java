@@ -5,15 +5,10 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.drive.MecanumDrive;
-import org.firstinspires.ftc.teamcode.intake.BasePositions;
-import org.firstinspires.ftc.teamcode.intake.DoubleReverse4Bar;
-import org.firstinspires.ftc.teamcode.intake.Intake;
 import org.firstinspires.ftc.teamcode.intake.IntakeConstants;
-import org.firstinspires.ftc.teamcode.intake.IntakePosition;
-import org.firstinspires.ftc.teamcode.intake.StateDR4B;
 
 @TeleOp(name = "TeleOp Blue", group = "TeleOp")
-public class TeleOpBlue extends LinearOpMode {
+public class TeleOpBlueTest extends LinearOpMode {
 
     MecanumDrive mecanumDrive;
     DoubleReverse4Bar doubleReverse4Bar;
@@ -105,7 +100,7 @@ public class TeleOpBlue extends LinearOpMode {
             else if(doubleReverse4Bar.getIntake() == Intake.INTAKE) {
                 doubleReverse4Bar.setBasePosition(BasePositions.INTAKE);
                 doubleReverse4Bar.setIntake(Intake.NOTHING);
-                TeleOpBlue.on = false;
+                TeleOpBlueTest.on = false;
             }
 
             if(doubleReverse4Bar.getState() == StateDR4B.AUTODOWN)

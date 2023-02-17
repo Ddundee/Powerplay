@@ -47,9 +47,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/*
- * Simple mecanum drive hardware implementation for REV hardware.
- */
 @Config
 public class MecanumDrive extends com.acmerobotics.roadrunner.drive.MecanumDrive {
 
@@ -91,42 +88,12 @@ public class MecanumDrive extends com.acmerobotics.roadrunner.drive.MecanumDrive
             module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         }
 
-        // TODO: adjust the names of the following hardware devices to match your configuration
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
-        imu.initialize(parameters);
-
-        // TODO: If the hub containing the IMU you are using is mounted so that the "REV" logo does
-        // not face up, remap the IMU axes so that the z-axis points upward (normal to the floor.)
-        //
-        //             | +Z axis
-        //             |
-        //             |
-        //             |
-        //      _______|_____________     +Y axis
-        //     /       |_____________/|__________
-        //    /   REV / EXPANSION   //
-        //   /       / HUB         //
-        //  /_______/_____________//
-        // |_______/_____________|/
-        //        /
-        //       / +X axis
-        //
-        // This diagram is derived from the axes in section 3.4 https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bno055-ds000.pdf
-        // and the placement of the dot/orientation from https://docs.revrobotics.com/rev-control-system/control-system-overview/dimensions#imu-location
-        //
-        // For example, if +Y in this diagram faces downwards, you would use AxisDirection.NEG_Y.
-        // BNO055IMUUtil.remapZAxis(imu, AxisDirection.NEG_Y);
-
         leftFront = hardwareMap.get(DcMotorEx.class, "flMec");
         leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
         leftRear = hardwareMap.get(DcMotorEx.class, "blMec");
         leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
         rightRear = hardwareMap.get(DcMotorEx.class, "brMec");
-//        rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
         rightFront = hardwareMap.get(DcMotorEx.class, "frMec");
-//        rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
 
         leftRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -150,11 +117,6 @@ public class MecanumDrive extends com.acmerobotics.roadrunner.drive.MecanumDrive
         if (RUN_USING_ENCODER && MOTOR_VELO_PID != null) {
             setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, MOTOR_VELO_PID);
         }
-
-        // TODO: reverse any motors using DcMotor.setDirection()
-
-        // TODO: if desired, use setLocalizer() to change the localization method
-        // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
 
         trajectorySequenceRunner = new TrajectorySequenceRunner(follower, HEADING_PID);
     }
@@ -260,7 +222,6 @@ public class MecanumDrive extends com.acmerobotics.roadrunner.drive.MecanumDrive
 
         if (Math.abs(drivePower.getX()) + Math.abs(drivePower.getY())
                 + Math.abs(drivePower.getHeading()) > 1) {
-            // re-normalize the powers according to the weights
             double denom = VX_WEIGHT * Math.abs(drivePower.getX())
                     + VY_WEIGHT * Math.abs(drivePower.getY())
                     + OMEGA_WEIGHT * Math.abs(drivePower.getHeading());
@@ -290,7 +251,6 @@ public class MecanumDrive extends com.acmerobotics.roadrunner.drive.MecanumDrive
         List<Double> wheelVelocities = new ArrayList<>();
         for (DcMotorEx motor : motors) {
             wheelVelocities.add(encoderTicksToInches(motor.getVelocity()));
-//            if(motor.getDeviceName() == )
         }
         return wheelVelocities;
     }
@@ -301,6 +261,19 @@ public class MecanumDrive extends com.acmerobotics.roadrunner.drive.MecanumDrive
         leftRear.setPower(v1);
         rightRear.setPower(v2);
         rightFront.setPower(v3);
+    }
+
+    public void setPowersByGamepad(double x, double y, double rx, double multiplier) {
+        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+        double lf = ((y + x + rx) / denominator) * multiplier;
+        double lb = ((y - x + rx) / denominator) * multiplier;
+        double rb = ((y + x - rx) / denominator) * multiplier;
+        double rf = ((y - x - rx) / denominator) * multiplier;
+
+        leftFront.setPower(lf);
+        leftRear.setPower(lb);
+        rightRear.setPower(rb);
+        rightFront.setPower(rf);
     }
 
     @Override
@@ -322,18 +295,5 @@ public class MecanumDrive extends com.acmerobotics.roadrunner.drive.MecanumDrive
 
     public static TrajectoryAccelerationConstraint getAccelerationConstraint(double maxAccel) {
         return new ProfileAccelerationConstraint(maxAccel);
-    }
-
-    public void setPowersByGamepad(double x, double y, double rx, double multiplier) {
-        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-        double lf = ((y + x + rx) / denominator) * multiplier;
-        double lb = ((y - x + rx) / denominator) * multiplier;
-        double rb = ((y + x - rx) / denominator) * multiplier;
-        double rf = ((y - x - rx) / denominator) * multiplier;
-
-        leftFront.setPower(lf);
-        leftRear.setPower(lb);
-        rightRear.setPower(rb);
-        rightFront.setPower(rf);
     }
 }
