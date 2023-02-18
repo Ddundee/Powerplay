@@ -7,14 +7,18 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.intake.IntakeConstants;
 
 public class Claw {
+    public enum ClawStatus {
+        OPEN,
+        CLOSE
+    }
     private HardwareMap hardwareMap;
 
     private Servo rightClaw;
     private Servo leftClaw;
 
-    private boolean clawStatus;
+    private ClawStatus clawStatus;
 
-    public Claw(HardwareMap hardwareMap, boolean clawStatus) {
+    public Claw(HardwareMap hardwareMap, ClawStatus clawStatus) {
         this.hardwareMap = hardwareMap;
 
         rightClaw = hardwareMap.servo.get("rightClaw");
@@ -24,17 +28,13 @@ public class Claw {
         setClawStatus(clawStatus);
     }
 
-    public boolean getClawStatus() {
+    public ClawStatus getClawStatus() {
         return clawStatus;
     }
 
-    /**
-     * clawStatus is true means claw opens
-     * clawStatus is false means claw closes
-     */
-    public void setClawStatus(boolean clawStatus) {
+    public void setClawStatus(ClawStatus clawStatus) {
         if(this.clawStatus == clawStatus) return;
-        else if(clawStatus) {
+        else if(clawStatus == ClawStatus.OPEN) {
             rightClaw.setPosition(IntakeConstants.Claw.rightClawOpen);
             leftClaw.setPosition(IntakeConstants.Claw.leftClawOpen);
         }
