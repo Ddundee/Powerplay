@@ -15,7 +15,6 @@ public class Claw {
 
     private Servo rightClaw;
     private Servo leftClaw;
-
     private ClawStatus clawStatus;
 
     public Claw(HardwareMap hardwareMap, ClawStatus clawStatus) {

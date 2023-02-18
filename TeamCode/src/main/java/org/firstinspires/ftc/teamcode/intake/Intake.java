@@ -31,7 +31,6 @@ public class Intake {
     public void setLinkageAdjustment(int adjustment) {
         // ...
     }
-
     public void setState(IntakeStates state) {
         switch (state) {
             case LOW_CONE_PICKUP:
