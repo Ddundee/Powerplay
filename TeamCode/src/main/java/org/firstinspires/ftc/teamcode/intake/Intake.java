@@ -11,16 +11,16 @@ import org.firstinspires.ftc.teamcode.intake.subsystems.Linkage;
 public class Intake {
     private Telemetry telemetry;
 
-    private Base base;
-    private Claw claw;
-    private Linkage linkage;
-    private BNO055IMU imu;
-    private BNO055IMU.Parameters parameters;
+    private final Base base;
+    private final Claw claw;
+    private final Linkage linkage;
+    private final BNO055IMU imu;
+    private final BNO055IMU.Parameters parameters;
 
-    public Intake(HardwareMap hardwareMap, Telemetry telemetry) {
+    public Intake(HardwareMap hardwareMap, Telemetry telemetry, double linkageSpeed) {
         base = new Base(hardwareMap);
         claw = new Claw(hardwareMap, Claw.ClawStatus.CLOSE);
-        linkage = new Linkage(hardwareMap);
+        linkage = new Linkage(hardwareMap, linkageSpeed);
 
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         parameters = new BNO055IMU.Parameters();
@@ -33,6 +33,10 @@ public class Intake {
     }
     public void setState(IntakeStates state) {
         switch (state) {
+            case HOLD:
+                claw.setClawStatus(Claw.ClawStatus.CLOSE);
+                base.setPosition(Base.BasePositions.HOLD);
+                break;
             case LOW_CONE_PICKUP:
                 base.setPosition(Base.BasePositions.LOW_INTAKE);
                 claw.setClawStatus(Claw.ClawStatus.OPEN);

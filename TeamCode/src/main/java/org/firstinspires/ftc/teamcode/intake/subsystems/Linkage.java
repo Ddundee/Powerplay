@@ -24,8 +24,9 @@ public class Linkage {
 
     private LinkagePosition position;
     private int adjustment;
+    private double speed;
 
-    public Linkage(HardwareMap hardwareMap) {
+    public Linkage(HardwareMap hardwareMap, double speed) {
         this.hardwareMap = hardwareMap;
 
         rightLinkage = hardwareMap.dcMotor.get("linkager");
@@ -39,8 +40,8 @@ public class Linkage {
         rightLinkage.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftLinkage.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        rightLinkage.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        leftLinkage.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        this.speed = speed;
+
 
         setPosition(LinkagePosition.DOWN);
 
@@ -72,6 +73,10 @@ public class Linkage {
                 leftLinkage.setTargetPosition(IntakeConstants.LinkagePositions.linkageHigh);
                 break;
         }
+        rightLinkage.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        leftLinkage.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightLinkage.setPower(speed);
+        leftLinkage.setPower(speed);
 
         this.position = position;
     }

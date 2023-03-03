@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.intake;
 
 public enum IntakeStates {
+    HOLD,
     LOW_CONE_PICKUP,
     HIGH_CONE_PICKUP,
     INIT,
